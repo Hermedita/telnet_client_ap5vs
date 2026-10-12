@@ -16,10 +16,11 @@ public class TelnetClient {
     }
 
     public void run() throws InterruptedException {
-        try (Socket socket = new Socket(serverIp, port)) {
+        try (Socket s = new Socket(serverIp, port)) {
+            this.socket = s;
 
-            Thread readThread = new Thread(() -> readFromClient());
-            Thread serverThread = new Thread(() -> readFromServer());
+            Thread readThread = new Thread(this::readFromClient);
+            Thread serverThread = new Thread(this::readFromServer);
 
             readThread.setDaemon(true);
 
@@ -40,7 +41,7 @@ public class TelnetClient {
     public void readFromClient(){
         try{
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            PrintWriter writer = new PrintWriter(this.socket.getOutputStream(), true);
+            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 
             String line;
             while(running && (line = reader.readLine()) != null){
@@ -59,7 +60,7 @@ public class TelnetClient {
 
     public void readFromServer(){
         try{
-            BufferedReader reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         
             String line;
             while((line = reader.readLine()) != null){
